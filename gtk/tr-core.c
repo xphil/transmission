@@ -22,6 +22,7 @@
 
 #include <math.h> /* pow () */
 #include <string.h> /* strlen */
+#include <stdlib.h> /* system */
 
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
@@ -1913,6 +1914,11 @@ gtr_core_find_torrent (TrCore * core, int id)
   return tor;
 }
 
+/* Calls torrent-open command with torrent file name or directory path as an
+ * argument.
+ * torrent-open command supposed to take action appropriate to file type.
+ * Note: make sure that torrent-open is in your $PATH!
+ */
 void
 gtr_core_open_folder (TrCore * core, int torrent_id)
 {
@@ -1920,18 +1926,13 @@ gtr_core_open_folder (TrCore * core, int torrent_id)
 
   if (tor != NULL)
     {
-      const gboolean single = tr_torrentInfo (tor)->fileCount == 1;
+      char cmd[FILENAME_MAX] = {};
       const char * currentDir = tr_torrentGetCurrentDir (tor);
+      char * path = g_build_filename (currentDir, tr_torrentName (tor), NULL);
 
-      if (single)
-        {
-          gtr_open_file (currentDir);
-        }
-      else
-        {
-          char * path = g_build_filename (currentDir, tr_torrentName (tor), NULL);
-          gtr_open_file (path);
-          g_free (path);
-        }
+      snprintf(cmd, FILENAME_MAX, "torrent-open '%s'", path);
+      g_free (path);
+
+      system(cmd);
     }
 }

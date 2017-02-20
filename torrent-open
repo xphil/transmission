@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#
+# This script takes downloaded torrent path as an argument and starts playing
+# video if the path is a single video file, or path is a directory which
+# contains a single video file bigger than 1 MB in size.
+# In case if multiple big video or other file types has been found in directory
+# passed, then this script will just open that directory.
+# If non-video file is passed as an argument - it will do nothing.
+#
+
+system_open ()
+{
+    file \"$1\" | grep executable >/dev/null
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo "============================================="
+        echo "= Error: Would not risk to open executable! ="
+        echo "============================================="
+        echo ""
+
+        exit 1
+    fi
+    xdg-open "$1"
+}
+
+is_video_file ()
+{
+    filename=$(basename "$1")
+    extension="${filename##*.}"
+
+    for e in mkv mp4 avi mpg mpeg; do
+        if [ "$extension" == "$e" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+if [ $# -ne 1 ]; then
+    echo "Usage: torrent-open <file or path>"
+    exit 1
+fi
+
+torrent_path=$1
+
+if [ -f "$torrent_path" ]; then
+    if is_video_file "$torrent_path"; then
+        system_open "$torrent_path"
+    fi
+else
+    res=$(find "$torrent_path" -type f -size +10M 2>/dev/null | grep -vi sample)
+
+    if [ $(echo "$res" | wc -l) -eq 1 ] && is_video_file "$res"; then
+        system_open "$res"
+    else
+        system_open "$torrent_path"
+    fi
+fi

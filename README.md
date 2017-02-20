@@ -31,6 +31,12 @@ If you're new to building programs from source code, this is typically easier th
 
 ### Building Transmission from Git (first time)
 
+Some dependencies for clean Ubuntu 16.04:
+
+    $ sudo apt install libgtk-3-dev libappindicator3-dev libcurlpp0 libcurlpp-dev libssl-dev libssl1.0.0 intltool
+
+Installation process itself:
+
     $ git clone https://github.com/transmission/transmission Transmission
     $ cd Transmission
     $ git submodule update --init
